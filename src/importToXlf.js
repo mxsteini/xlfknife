@@ -114,7 +114,7 @@ function createJsDomElement(tObj) {
     if (tObj.target) {
         tOs += '<target>' + tObj.target + '</target>';
     } else {
-        tOs += '<target state="needs-translation"></target>';
+        tOs += '<target>needsTranslation</target>';
     }
     tOs += '</trans-unit>';
     const o = convert.xml2js(tOs);
