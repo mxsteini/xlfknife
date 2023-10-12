@@ -10,9 +10,9 @@ function formatExportCsv(translateObj) {
     const CSV = require('csv-string');
     var lines = [];
     translateObj.forEach(row => {
-        lines.push([row.id,row.source,row.target]);
+        lines.push([row.id, row.source, row.target]);
     });
-    return CSV.stringify(lines,';');
+    return CSV.stringify(lines, ';');
 }
 
 /**
@@ -25,8 +25,8 @@ function formatExportCsv(translateObj) {
 function formatExportPo(translateObj) {
     var content = '';
     translateObj.forEach(row => {
-        content += 'msgid: "'+ row.id + '"\n';
-        content += 'msgstr: "' + (row.target?row.target:row.source) + '"\n\n';
+        content += 'msgid: "' + row.id + '"\n';
+        content += 'msgstr: "' + (row.target ? row.target : row.source) + '"\n\n';
     });
     return content;
 }
@@ -40,9 +40,9 @@ function formatExportPo(translateObj) {
 function formatExportPhp(translateObj) {
     var content = '<?php\nreturn [\n';
     translateObj.forEach(row => {
-        content += '"'+ row.id + '" => "' + (row.target?row.target:row.source).replace(/"/g, '\\"') + '",\n';
+        content += '"' + row.id + '" => "' + (row.target ? row.target : row.source).replace(/"/g, '\\"') + '",\n';
     });
-    return content +'];';
+    return content + '];';
 }
 
 /**
@@ -55,4 +55,4 @@ function formatExportJs(translateObj) {
     return JSON.stringify(translateObj);
 }
 
-module.exports = { formatExportCsv , formatExportPo ,formatExportPhp,formatExportJs};
+module.exports = {formatExportCsv, formatExportPo, formatExportPhp, formatExportJs};

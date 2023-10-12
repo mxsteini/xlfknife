@@ -1,9 +1,9 @@
 const log = require('./log');
 
 
-function formatImportStringToTranslationObj(content,type){
+function formatImportStringToTranslationObj(content, type) {
 
-    switch (type){
+    switch (type) {
         case 'csv':
             return formatImportCsvStringToTranslationObj(content);
             break;
@@ -15,16 +15,17 @@ function formatImportStringToTranslationObj(content,type){
             break;
         default:
             //throw ;
-            throw new Error("Wrong input format of the source file. Input-Format: "+type); //inside callback
+            throw new Error("Wrong input format of the source file. Input-Format: " + type); //inside callback
             break;
     }
 
 }
+
 function formatPoStringToTranslationObj(poString) {
     var PO = require('pofile');
 
     var poObject = PO.parse(poString);
-    var tanslate =[];
+    var tanslate = [];
     poObject.items.forEach(itm => {
         tanslate.push({id: itm.msgid, target: itm.msgstr.join('')});
     })
@@ -33,7 +34,7 @@ function formatPoStringToTranslationObj(poString) {
     return tanslate;
 }
 
-function formatXlfStringToTranslationObj(xmlString){
+function formatXlfStringToTranslationObj(xmlString) {
     const {convertXlf2Object} = require('../exportXlf');
     //log(xmlString);
     return convertXlf2Object(xmlString);
@@ -47,7 +48,7 @@ function formatXlfStringToTranslationObj(xmlString){
  */
 function formatImportCsvStringToTranslationObj(csvString) {
     const CSV = require('csv-string');
-    var tanslate =[];
+    var tanslate = [];
     CSV.forEach(csvString, ';', function (row, index) {
         tanslate.push({id: row[0], source: row[1], target: row[2]});
     });
@@ -64,8 +65,8 @@ function formatImportCsvStringToTranslationObj(csvString) {
 function formatExportPo(translateObj) {
     var content = '';
     translateObj.forEach(row => {
-        content += 'msgid: "'+ row.id + '"\n';
-        content += 'msgstr: "' + (row.target?row.target:row.source) + '"\n\n';
+        content += 'msgid: "' + row.id + '"\n';
+        content += 'msgstr: "' + (row.target ? row.target : row.source) + '"\n\n';
     });
     return content;
 }
@@ -79,9 +80,9 @@ function formatExportPo(translateObj) {
 function formatExportPhp(translateObj) {
     var content = '<?php\nreturn [\n';
     translateObj.forEach(row => {
-        content += '"'+ row.id + '" => "' + (row.target?row.target:row.source).replace(/"/g, '\\"') + '",\n';
+        content += '"' + row.id + '" => "' + (row.target ? row.target : row.source).replace(/"/g, '\\"') + '",\n';
     });
-    return content +'];';
+    return content + '];';
 }
 
 /**
@@ -94,4 +95,4 @@ function formatExportJs(translateObj) {
     return JSON.stringify(translateObj);
 }
 
-module.exports = { formatImportStringToTranslationObj, formatImportCsvStringToTranslationObj };
+module.exports = {formatImportStringToTranslationObj, formatImportCsvStringToTranslationObj};

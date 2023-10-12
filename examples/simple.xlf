@@ -15,8 +15,10 @@
             </trans-unit>
 
             <trans-unit id="test-html">
-                <source>34<h1 class="text">test</h1>
-                    56</source>
+                <source>34
+                    <h1 class="text">test</h1>
+                    56
+                </source>
             </trans-unit>
 
             <trans-unit id="test-json">

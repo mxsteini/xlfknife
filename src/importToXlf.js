@@ -1,8 +1,9 @@
 const convert = require('xml-js');
 const log = require('./helpers/log');
 const date = require('./helpers/date');
-const XmlWalker = require('./class/XmlWalker.js');
+const XmlWalker = require('./class/xmlWalker.js');
 const xmlWalker = new XmlWalker();
+
 /**
  * Translates an .xlf file from one language to another
  *
@@ -12,13 +13,13 @@ const xmlWalker = new XmlWalker();
  * @returns {string}
  */
 
-async function importTrnslObjToXlf(input, trnslObj,options) {
+async function importTrnslObjToXlf(input, trnslObj, options) {
     xmlWalker.xml2js(input);
-    const idsInXlf = xmlWalker.walk(function(elem){
+    const idsInXlf = xmlWalker.walk(function (elem) {
         if (elem.name === 'file') {
             elem.attributes['target-language'] = options.lang;
             elem.attributes['date'] = date();
-            if(options.sourceLanguage){
+            if (options.sourceLanguage) {
                 elem.attributes['source-language'] = options.sourceLanguage;
             }
         }
@@ -27,8 +28,8 @@ async function importTrnslObjToXlf(input, trnslObj,options) {
         }
         return false;
     });
-   // log(trnslObj);
-    xmlWalker.walk(function(elem){
+    // log(trnslObj);
+    xmlWalker.walk(function (elem) {
         if (elem.name === 'body') {
             trnslObj.forEach(tObj => {
                 if (tObj.id && !idsInXlf.includes(tObj.id)) {
@@ -40,22 +41,22 @@ async function importTrnslObjToXlf(input, trnslObj,options) {
     });
 
 
-    if(options.merge != undefined ){
-        xmlWalker.walk(function(elem){
-            if ( elem.name === 'trans-unit') {
+    if (options.merge != undefined) {
+        xmlWalker.walk(function (elem) {
+            if (elem.name === 'trans-unit') {
                 var newSource = false
                 trnslObj.forEach(tObj => {
                     if (tObj.id == elem.attributes['id']) {
-                        const sourceObj = (options.merge=='target2source')?tObj.target:tObj.source;
-                        newSource = convert.xml2js('<source>' +sourceObj + '</source>').elements[0];
+                        const sourceObj = (options.merge == 'target2source') ? tObj.target : tObj.source;
+                        newSource = convert.xml2js('<source>' + sourceObj + '</source>').elements[0];
                     }
                 });
-                if(elem.elements.find(el => el.name === 'source') == undefined){
-                    if(newSource)
+                if (elem.elements.find(el => el.name === 'source') == undefined) {
+                    if (newSource)
                         elem.elements.unshift(newSource);
-                }else{
-                    elem.elements.forEach(function(el, index) {
-                        if(elem.elements[index].name === 'source'){
+                } else {
+                    elem.elements.forEach(function (el, index) {
+                        if (elem.elements[index].name === 'source') {
                             elem.elements[index] = newSource;
                         }
                     });
@@ -65,7 +66,7 @@ async function importTrnslObjToXlf(input, trnslObj,options) {
     }
 
 
-    return xmlWalker.js2xml( {
+    return xmlWalker.js2xml({
         spaces: 4,
         // https://github.com/nashwaan/xml-js/issues/26#issuecomment-355620249
         attributeValueFn: function (value) {
@@ -75,10 +76,10 @@ async function importTrnslObjToXlf(input, trnslObj,options) {
 }
 
 
-async function reportkeysTrnslObjects(input, trnslObj,mode) {
+async function reportkeysTrnslObjects(input, trnslObj, mode) {
     xmlWalker.xml2js(input);
 
-    const idsInXlf = xmlWalker.walk(function(elem){
+    const idsInXlf = xmlWalker.walk(function (elem) {
         if (elem.name === 'trans-unit') {
             return elem.attributes['id'];
         }
@@ -86,23 +87,22 @@ async function reportkeysTrnslObjects(input, trnslObj,mode) {
     });
 
 
-    if(mode=='file'){
+    if (mode == 'file') {
         return idsInXlf;
     }
-    const returnIDs =[];
-    for(var i = 0; i < trnslObj.length; i++) {
-        if(mode=='missing') {
+    const returnIDs = [];
+    for (var i = 0; i < trnslObj.length; i++) {
+        if (mode == 'missing') {
             if (trnslObj[i].id && !idsInXlf.includes(trnslObj[i].id)) {
                 returnIDs.push(trnslObj[i].id);
             }
-        }
-        else if(mode=='source'||mode=='all'){
+        } else if (mode == 'source' || mode == 'all') {
             returnIDs.push(trnslObj[i].id);
         }
     }
-    if(mode=='all'){
+    if (mode == 'all') {
         //returnIDs.concat(returnIDs).unique();
-        return [...new Set([...returnIDs ,...idsInXlf])];
+        return [...new Set([...returnIDs, ...idsInXlf])];
     }
 
     return returnIDs;
@@ -110,20 +110,20 @@ async function reportkeysTrnslObjects(input, trnslObj,mode) {
 
 function createJsDomElement(tObj) {
     var tOs = '<trans-unit id="' + tObj.id + '">';
-    if(tObj.source ) tOs +='<source>' + tObj.source + '</source>';
-    if(tObj.target ) {
-        tOs +='<target>' + tObj.target + '</target>';
-    }else{
-        tOs +='<target state="needs-translation"></target>';
+    if (tObj.source) tOs += '<source>' + tObj.source + '</source>';
+    if (tObj.target) {
+        tOs += '<target>' + tObj.target + '</target>';
+    } else {
+        tOs += '<target state="needs-translation"></target>';
     }
-    tOs +='</trans-unit>';
+    tOs += '</trans-unit>';
     const o = convert.xml2js(tOs);
     return o.elements[0];
 }
 
 
-function getEmptyXlfFile(){
-    var filecontent =  '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n' +
+function getEmptyXlfFile() {
+    var filecontent = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n' +
         '<xliff version="1.0">\n' +
         '    <file source-language="" datatype="plaintext">\n' +
         '        <body>\n' +
@@ -133,4 +133,4 @@ function getEmptyXlfFile(){
     return filecontent;
 }
 
-module.exports = { importTrnslObjToXlf , reportkeysTrnslObjects,getEmptyXlfFile };
+module.exports = {importTrnslObjToXlf, reportkeysTrnslObjects, getEmptyXlfFile};

@@ -4,21 +4,21 @@
 */
 const path = require('path');
 const chalk = require('chalk');
-const { readFileAsync, writeFileAsync } = require('./helpers/fs-async');
+const {readFileAsync, writeFileAsync} = require('./helpers/fs-async');
 
-const {importTrnslObjToXlf,reportkeysTrnslObjects,getEmptyXlfFile} = require('./importToXlf');
+const {importTrnslObjToXlf, reportkeysTrnslObjects, getEmptyXlfFile} = require('./importToXlf');
 const {convertXlf2Object} = require('./exportXlf');
 
 const log = require('./helpers/log');
 const fs = require('fs');
 
-const { fileExtname  }= require('./helpers/file');
+const {fileExtname} = require('./helpers/file');
 
-const { formatExportCsv, formatExportPo, formatExportPhp, formatExportJs } = require('./helpers/format-export-string');
+const {formatExportCsv, formatExportPo, formatExportPhp, formatExportJs} = require('./helpers/format-export-string');
 
 
 const argv = require('yargs')
-    .command('export <file> [options]', 'Exports XLF files to *.csv or *.po',(yargs) => {
+    .command('export <file> [options]', 'Exports XLF files to *.csv or *.po', (yargs) => {
         yargs
             .positional('file', {
                 describe: 'port to bind on',
@@ -26,7 +26,7 @@ const argv = require('yargs')
             })
             .option('format', {
                 demand: false,
-                default:'csv',
+                default: 'csv',
                 describe: 'Default: csv. (csv|po|php|js)',
                 type: 'string',
             })
@@ -38,7 +38,7 @@ const argv = require('yargs')
             })
     })
 
-    .command('import <file> [options]', 'Imports *.xlf, *.csv or *.po into new or existing XLF files. ',(yargs) => {
+    .command('import <file> [options]', 'Imports *.xlf, *.csv or *.po into new or existing XLF files. ', (yargs) => {
         yargs
             .option('source', {
                 demand: true,
@@ -68,7 +68,7 @@ const argv = require('yargs')
         ;
 
     })
-    .command('reportkeys <file> [options]', 'Report missing keys to stdout',(yargs) => {
+    .command('reportkeys <file> [options]', 'Report missing keys to stdout', (yargs) => {
         yargs
             .option('source', {
                 demand: false,
@@ -90,21 +90,20 @@ const argv = require('yargs')
     .argv;
 
 
-
-if(argv._.includes('create')){
+if (argv._.includes('create')) {
     console.log('create');
-}else if(argv._.includes('reportkeys')){
-    const{ formatImportStringToTranslationObj }= require('./helpers/format-import-string');
+} else if (argv._.includes('reportkeys')) {
+    const {formatImportStringToTranslationObj} = require('./helpers/format-import-string');
     readFileAsync(path.resolve(argv.source))
         .then(filecontent => {
-            return formatImportStringToTranslationObj(filecontent.toString(),fileExtname(argv.source))
+            return formatImportStringToTranslationObj(filecontent.toString(), fileExtname(argv.source))
         })
         .then(translationObj => {
-            var filecontent = fs.readFileSync(path.resolve(argv.file),'utf8');
-            return reportkeysTrnslObjects(filecontent,translationObj,argv.mode);
+            var filecontent = fs.readFileSync(path.resolve(argv.file), 'utf8');
+            return reportkeysTrnslObjects(filecontent, translationObj, argv.mode);
         })
         .then(output => {
-            process.stdout.write(output.join('\n')+ '\n');
+            process.stdout.write(output.join('\n') + '\n');
         })
         .catch(err => {
             log(
@@ -117,31 +116,31 @@ if(argv._.includes('create')){
         });
 
 
-}else if(argv._.includes('import')){
-    const{ formatImportStringToTranslationObj }= require('./helpers/format-import-string');
+} else if (argv._.includes('import')) {
+    const {formatImportStringToTranslationObj} = require('./helpers/format-import-string');
     readFileAsync(path.resolve(argv.source))
         .then(filecontent => {
             //log(fileExtname(argv.source));
-            return formatImportStringToTranslationObj(filecontent.toString(),fileExtname(argv.source))
+            return formatImportStringToTranslationObj(filecontent.toString(), fileExtname(argv.source))
         })
         .then(translationObj => {
             var filecontent = '';
-            if(argv.file === 'create' || argv.file === 'new'){
-                filecontent =getEmptyXlfFile();
-            }else{
-                filecontent = fs.readFileSync(path.resolve(argv.file),'utf8');
+            if (argv.file === 'create' || argv.file === 'new') {
+                filecontent = getEmptyXlfFile();
+            } else {
+                filecontent = fs.readFileSync(path.resolve(argv.file), 'utf8');
             }
             const options = {
-                lang:argv.lang,
-                merge:argv.merge,
-                sourceLanguage:argv.sourceLanguage
+                lang: argv.lang,
+                merge: argv.merge,
+                sourceLanguage: argv.sourceLanguage
             }
-            return importTrnslObjToXlf(filecontent,translationObj,options);
+            return importTrnslObjToXlf(filecontent, translationObj, options);
         })
         .then(output => {
-            if(argv.target){
+            if (argv.target) {
                 return writeFileAsync(path.resolve(argv.target), output);
-            }else{
+            } else {
                 process.stdout.write(output);
             }
         })
@@ -155,32 +154,32 @@ if(argv._.includes('create')){
             log('' + err.stack);
         });
 
-}else if(argv._.includes('export')){
+} else if (argv._.includes('export')) {
     readFileAsync(path.resolve(argv.file))
         .then(xlf => {
             return convertXlf2Object(xlf.toString());
         })
         .then(exportData => {
-            switch(argv.format){
+            switch (argv.format) {
                 case 'po':
                     return formatExportPo(exportData);
-                break;
+                    break;
                 case 'php':
                     return formatExportPhp(exportData);
-                break;
+                    break;
                 case 'js':
                 case 'json':
                     return formatExportJs(exportData);
                     break;
                 default:
                     return formatExportCsv(exportData);
-                break;
+                    break;
             }
         })
         .then(output => {
-            if(argv.out){
+            if (argv.out) {
                 return writeFileAsync(path.resolve(argv.out), output);
-            }else{
+            } else {
                 process.stdout.write(output);
             }
         })

@@ -34,4 +34,4 @@ function writeFileAsync(path, data) {
     });
 }
 
-module.exports = { readFileAsync , writeFileAsync };
+module.exports = {readFileAsync, writeFileAsync};
